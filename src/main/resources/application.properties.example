@@ -1,0 +1,6 @@
+server.port=8080
+
+spring.mongodb.uri=mongodb and password
+
+# Database Name
+spring.mongodb.database=e_commerce
