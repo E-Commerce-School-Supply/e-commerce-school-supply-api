@@ -16,8 +16,18 @@ public class JwtUtil {
 
     public JwtUtil(JwtProperties properties) {
         this.properties = properties;
-        // Decodes the secret from Base64 as shown in the PDF
-        this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(properties.getSecret()));
+        // Try to load the secret from properties. If missing, generate a dev key.
+        String secret = properties.getSecret();
+        if (secret == null || secret.isBlank()) {
+            // Development fallback: generate a random 256-bit (32-byte) HMAC key (not for production)
+            java.security.SecureRandom random = new java.security.SecureRandom();
+            byte[] generated = new byte[32];
+            random.nextBytes(generated);
+            this.key = Keys.hmacShaKeyFor(generated);
+        } else {
+            // Decodes the secret from Base64 (expected provided value is Base64)
+            this.key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(secret));
+        }
     }
 
     public String generateToken(String username) {
@@ -50,10 +60,11 @@ public class JwtUtil {
     }
 
     private Claims extractAllClaims(String token) {
+        // Use parserBuilder with the signing key to parse JWS and return claims
         return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
     }
 }

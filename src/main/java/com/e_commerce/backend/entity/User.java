@@ -32,6 +32,7 @@ public class User {
     private List<String> wishlistProductIds = new ArrayList<>();
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime lastLoginDate;
 
     @Data
     public static class Address {

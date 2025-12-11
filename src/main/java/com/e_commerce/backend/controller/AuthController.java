@@ -61,6 +61,11 @@ public class AuthController {
                 User userDetails = userRepository.findByEmail(email)
                         .orElseThrow(() -> new RuntimeException("User not found"));
 
+                // Update last login date (using Phnom Penh timezone UTC+7)
+                java.time.ZoneId cambodiaZone = java.time.ZoneId.of("Asia/Phnom_Penh");
+                userDetails.setLastLoginDate(java.time.LocalDateTime.now(cambodiaZone));
+                userRepository.save(userDetails);
+
                 // Construct the Response Map
                 Map<String, Object> response = new java.util.HashMap<>();
                 response.put("token", token);
