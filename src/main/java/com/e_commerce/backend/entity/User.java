@@ -36,10 +36,15 @@ public class User {
 
     @Data
     public static class Address {
+        private Long id;
         private String label; // "Home", "School"
         private String country;
         private String city;
+        private String houseNumber;
+        private String street;
         private String addressLine;
+        private String addressLine2;
+        private String zipCode;
         private boolean isDefault;
     }
 

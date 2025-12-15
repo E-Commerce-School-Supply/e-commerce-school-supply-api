@@ -46,6 +46,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated() // Product update requires auth
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Product deletion requires auth
                 .requestMatchers("/api/admin/**").authenticated() // Admin endpoints require authentication
+                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Allow order creation for testing (accepts cartId)
                 .anyRequest().authenticated() // Protect everything else
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
