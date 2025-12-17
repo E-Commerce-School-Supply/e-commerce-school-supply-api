@@ -24,6 +24,8 @@ public class Order {
     private Object address;
     private Object payment;
     private String shipping;
+    private String paymentMethod;
+    private String status;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 

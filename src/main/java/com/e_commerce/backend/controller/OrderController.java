@@ -111,6 +111,8 @@ public class OrderController {
         order.setTotal(total);
         if (payload != null && payload.containsKey("address")) order.setAddress(payload.get("address"));
         if (payload != null && payload.containsKey("payment")) order.setPayment(payload.get("payment"));
+        if (payload != null && payload.containsKey("paymentMethod")) order.setPaymentMethod(String.valueOf(payload.get("paymentMethod")));
+        if (payload != null && payload.containsKey("status")) order.setStatus(String.valueOf(payload.get("status")));
         if (payload != null && payload.containsKey("shipping")) order.setShipping(String.valueOf(payload.get("shipping")));
 
         orderRepository.save(order);
