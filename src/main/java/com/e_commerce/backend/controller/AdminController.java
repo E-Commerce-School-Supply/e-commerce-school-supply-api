@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.e_commerce.backend.dto.UserResponseDTO;
+import com.e_commerce.backend.entity.Order;
 import com.e_commerce.backend.entity.User;
+import com.e_commerce.backend.repository.OrderRepository;
 import com.e_commerce.backend.repository.UserRepository;
 
 @RestController
@@ -20,6 +22,9 @@ public class AdminController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     /**
      * Get all users with their details
@@ -63,6 +68,42 @@ public class AdminController {
             return ResponseEntity.ok(count);
         } catch (Exception e) {
             System.out.println("Error fetching user count: " + e.getMessage());
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    /**
+     * Get all orders for admin
+     */
+    @GetMapping("/orders")
+    public ResponseEntity<List<Order>> getAllOrders(Authentication authentication) {
+        try {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                System.out.println("Authentication is null or not authenticated");
+                return ResponseEntity.status(403).build();
+            }
+            
+            List<Order> orders = orderRepository.findAll();
+
+            // Enrich orders with user information (userId may be id, email, or username)
+            for (Order order : orders) {
+                if (order.getUserId() == null) continue;
+
+                String key = order.getUserId();
+                // Try by ID first
+                userRepository.findById(key).ifPresentOrElse(order::setUser, () -> {
+                    // Then by email
+                    userRepository.findByEmail(key).ifPresentOrElse(order::setUser, () -> {
+                        // Finally by username
+                        userRepository.findByUsername(key).ifPresent(order::setUser);
+                    });
+                });
+            }
+            
+            return ResponseEntity.ok(orders);
+        } catch (Exception e) {
+            System.out.println("Error fetching orders: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).build();
         }
     }

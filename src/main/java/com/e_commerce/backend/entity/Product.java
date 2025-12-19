@@ -23,4 +23,6 @@ public class Product {
     private Double discount;
     private String imageUrl;
     private String status;
+    private Double averageRating;
+    private Integer reviewCount;
 }

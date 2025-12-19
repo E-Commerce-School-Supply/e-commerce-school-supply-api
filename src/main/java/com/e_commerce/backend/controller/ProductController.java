@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/products")
@@ -19,6 +20,15 @@ public class ProductController {
     @GetMapping
     public List<Product> getAll() {
         return repository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable String id) {
+        Optional<Product> product = repository.findById(id);
+        if (product.isEmpty()) {
+            return ResponseEntity.status(404).body(java.util.Map.of("message", "Product not found"));
+        }
+        return ResponseEntity.ok(product.get());
     }
 
     @PostMapping
