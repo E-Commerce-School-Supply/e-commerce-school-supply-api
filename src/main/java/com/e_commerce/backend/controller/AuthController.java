@@ -76,6 +76,8 @@ public class AuthController {
                 response.put("email", userDetails.getEmail());
                 response.put("role", userDetails.getRole());
                 response.put("phoneNumber", userDetails.getPhoneNumber());
+                // Include avatar URL so the frontend can display the user's avatar immediately after login
+                response.put("avatarUrl", userDetails.getAvatarUrl());
                 
                 // // New Fields
                 // response.put("createdAt", userDetails.getCreatedAt());

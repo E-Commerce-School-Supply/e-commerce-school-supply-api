@@ -145,17 +145,29 @@ public class UserController {
         }
 
         try {
-            Path uploadDir = Paths.get("src/main/resources/static/avatars");
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
+            // Store uploaded avatars in a consistent, absolute runtime-writable folder
+            Path uploadDir = Paths.get("uploads", "avatars").toAbsolutePath();
+            Files.createDirectories(uploadDir);
 
             String original = file.getOriginalFilename();
             String filename = System.currentTimeMillis() + "-" + (original != null ? original.replaceAll("[^a-zA-Z0-9.\\-]", "_") : "avatar.jpg");
             Path target = uploadDir.resolve(filename);
-            file.transferTo(target.toFile());
 
-            String publicUrl = "/avatars/" + filename;
+            // Ensure parent directories exist before writing
+            Files.createDirectories(target.getParent());
+
+            // Use Files.copy with the MultipartFile input stream for a reliable write
+            try (java.io.InputStream in = file.getInputStream()) {
+                java.nio.file.Files.copy(in, target);
+            }
+
+            // Build a full public URL (includes scheme, host and port) so frontend can load it directly
+            String publicUrl = org.springframework.web.servlet.support.ServletUriComponentsBuilder
+                    .fromCurrentContextPath()
+                    .path("/avatars/")
+                    .path(filename)
+                    .toUriString();
+
             user.setAvatarUrl(publicUrl);
             userRepository.save(user);
 

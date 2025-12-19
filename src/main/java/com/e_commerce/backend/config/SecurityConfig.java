@@ -47,6 +47,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Product deletion requires auth
                 .requestMatchers("/api/admin/**").authenticated() // Admin endpoints require authentication
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Allow order creation for testing (accepts cartId)
+                // Allow public access to uploaded avatars and common static assets (so browser can fetch images without needing auth)
+                .requestMatchers("/avatars/**", "/flutter_service_worker.js", "/favicon.ico", "/**/*.js", "/**/*.css", "/**/*.html").permitAll()
                 .anyRequest().authenticated() // Protect everything else
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
