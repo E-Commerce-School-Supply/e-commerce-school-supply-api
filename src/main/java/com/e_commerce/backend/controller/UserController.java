@@ -161,17 +161,13 @@ public class UserController {
                 java.nio.file.Files.copy(in, target);
             }
 
-            // Build a full public URL (includes scheme, host and port) so frontend can load it directly
-            String publicUrl = org.springframework.web.servlet.support.ServletUriComponentsBuilder
-                    .fromCurrentContextPath()
-                    .path("/avatars/")
-                    .path(filename)
-                    .toUriString();
+                // Store relative public URL in DB (frontend will resolve to backend base when displaying)
+                String relativeUrl = "/avatars/" + filename;
 
-            user.setAvatarUrl(publicUrl);
-            userRepository.save(user);
+                user.setAvatarUrl(relativeUrl);
+                userRepository.save(user);
 
-            return ResponseEntity.ok(Map.of("avatarUrl", publicUrl));
+                return ResponseEntity.ok(Map.of("avatarUrl", relativeUrl));
         } catch (IOException e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of("message", "Failed to save file"));
