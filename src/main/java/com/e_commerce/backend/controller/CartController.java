@@ -47,7 +47,7 @@ public class CartController {
     public ResponseEntity<?> addItemToCart(@RequestBody Cart.CartItem item) {
         String userId = getCurrentUserId();
         Optional<Cart> cartOptional = cartRepository.findByUserId(userId);
-        
+            System.out.println("Received Rating: " + item.getRating());
         Cart cart;
         if (cartOptional.isPresent()) {
             cart = cartOptional.get();

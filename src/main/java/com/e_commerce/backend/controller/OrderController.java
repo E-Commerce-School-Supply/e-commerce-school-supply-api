@@ -3,6 +3,8 @@ package com.e_commerce.backend.controller;
 import com.e_commerce.backend.entity.Cart;
 import com.e_commerce.backend.entity.Order;
 import com.e_commerce.backend.entity.Product;
+import com.e_commerce.backend.enums.OrderStatus;
+import com.e_commerce.backend.enums.PaymentMethod;
 import com.e_commerce.backend.repository.CartRepository;
 import com.e_commerce.backend.repository.OrderRepository;
 import com.e_commerce.backend.repository.ProductRepository;
@@ -112,7 +114,23 @@ public class OrderController {
         if (payload != null && payload.containsKey("address")) order.setAddress(payload.get("address"));
         if (payload != null && payload.containsKey("payment")) order.setPayment(payload.get("payment"));
         if (payload != null && payload.containsKey("shipping")) order.setShipping(String.valueOf(payload.get("shipping")));
-
+        if (payload != null && payload.containsKey("paymentMethod")) {
+            try {
+                String pmStr = String.valueOf(payload.get("paymentMethod")).toUpperCase();
+                order.setPaymentMethod(PaymentMethod.valueOf(pmStr));
+            } catch (Exception e) {
+                // Handle invalid payment method string if necessary
+            }
+        }
+        if (payload != null && payload.containsKey("status")) {
+            try {
+                String statusStr = String.valueOf(payload.get("status")).toUpperCase();
+                order.setStatus(OrderStatus.valueOf(statusStr));
+            } catch (Exception e) {
+                // Fallback or handle error
+                order.setStatus(OrderStatus.PENDING);
+            }
+        }
         orderRepository.save(order);
 
         // Clear cart

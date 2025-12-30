@@ -8,6 +8,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.e_commerce.backend.enums.OrderStatus;
+import com.e_commerce.backend.enums.PaymentMethod;
+
 import lombok.Data;
 
 @Data
@@ -28,7 +31,8 @@ public class Order {
     private Object address;
     private Object payment;
     private String shipping;
-
+    private PaymentMethod paymentMethod = PaymentMethod.CARD; 
+    private OrderStatus status = OrderStatus.PENDING;
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Data
