@@ -1,16 +1,21 @@
 package com.e_commerce.backend.controller;
 
+import com.e_commerce.backend.dto.SigninRequestDTO;
+import com.e_commerce.backend.dto.SignupRequestDTO;
 import com.e_commerce.backend.entity.User;
 import com.e_commerce.backend.repository.UserRepository;
 import com.e_commerce.backend.security.JwtUtil;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -28,37 +33,65 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestDTO signupRequest, BindingResult bindingResult) {
+        // Check for validation errors
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> 
+                errors.put(error.getField(), error.getDefaultMessage())
+            );
+            return ResponseEntity.badRequest().body(Map.of("message", "Validation failed", "errors", errors));
+        }
+
+        // Validate passwords match
+        if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Passwords do not match!"));
+        }
+
+        // Check if email already exists
+        if (userRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Email already in use!"));
         }
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+
+        // Check if username already exists
+        if (userRepository.findByUsername(signupRequest.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Username already taken!"));
         }
 
-        // ENCODE PASSWORD BEFORE SAVING
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        // Create new user
+        User user = new User();
+        user.setUsername(signupRequest.getUsername());
+        user.setEmail(signupRequest.getEmail());
+        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        user.setPhoneNumber(signupRequest.getPhoneNumber());
         user.setRole("USER"); // Default role
+        
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "User registered successfully!"));
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> loginRequest) {
-        String email = loginRequest.get("email"); 
-        String password = loginRequest.get("password");
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody SigninRequestDTO signinRequest, BindingResult bindingResult) {
+        // Check for validation errors
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(error -> 
+                errors.put(error.getField(), error.getDefaultMessage())
+            );
+            return ResponseEntity.badRequest().body(Map.of("message", "Validation failed", "errors", errors));
+        }
 
         try {
             // This authenticates using Spring Security Manager (checks DB and BCrypt password)
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password)
+                    new UsernamePasswordAuthenticationToken(signinRequest.getEmail(), signinRequest.getPassword())
             );
 
             // If successful, generate token
             if (authentication.isAuthenticated()) {
-                String token = jwtUtil.generateToken(email);
-                User userDetails = userRepository.findByEmail(email)
+                String token = jwtUtil.generateToken(signinRequest.getEmail());
+                User userDetails = userRepository.findByEmail(signinRequest.getEmail())
                         .orElseThrow(() -> new RuntimeException("User not found"));
 
                 // Update last login date (using Phnom Penh timezone UTC+7)
@@ -67,7 +100,7 @@ public class AuthController {
                 userRepository.save(userDetails);
 
                 // Construct the Response Map
-                Map<String, Object> response = new java.util.HashMap<>();
+                Map<String, Object> response = new HashMap<>();
                 response.put("token", token);
                 
                 // User Identity
