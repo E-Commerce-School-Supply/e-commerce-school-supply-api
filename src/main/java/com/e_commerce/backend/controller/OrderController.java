@@ -15,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
@@ -105,7 +107,8 @@ public class OrderController {
             oi.setName(item.getName());
             oi.setPrice(item.getPrice());
             oi.setQuantity(item.getQuantity());
-            oi.setImage(item.getImage());
+            // Copy multi-image list; legacy single image falls back to first entry
+            oi.setImages(new ArrayList<>(Optional.ofNullable(item.getImages()).orElse(Collections.emptyList())));
             order.getItems().add(oi);
             total += (item.getPrice() == null ? 0.0 : item.getPrice()) * (item.getQuantity() == null ? 0 : item.getQuantity());
         }
