@@ -26,6 +26,7 @@ public class User {
     private String role;
     private String phoneNumber;
     private String avatarUrl;
+    private boolean deactivated = false;
     
     private List<Address> addresses = new ArrayList<>();
     private List<SavedCard> savedCards = new ArrayList<>();

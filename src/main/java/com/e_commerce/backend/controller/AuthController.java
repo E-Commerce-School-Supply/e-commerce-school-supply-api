@@ -49,7 +49,11 @@ public class AuthController {
         }
 
         // Check if email already exists
-        if (userRepository.findByEmail(signupRequest.getEmail()).isPresent()) {
+        java.util.Optional<User> existingUser = userRepository.findByEmail(signupRequest.getEmail());
+        if (existingUser.isPresent()) {
+            if (existingUser.get().isDeactivated()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "This email is associated with a deactivated account. Please contact support."));
+            }
             return ResponseEntity.badRequest().body(Map.of("message", "Email already in use!"));
         }
 

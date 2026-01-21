@@ -9,6 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import com.e_commerce.backend.dto.UserResponseDTO;
 import com.e_commerce.backend.entity.Order;
@@ -109,6 +112,59 @@ public class AdminController {
     }
 
     /**
+     * Deactivate a user account.
+     */
+    @PatchMapping("/users/{email}/deactivate")
+    public ResponseEntity<?> deactivateUser(@PathVariable String email, Authentication authentication) {
+        try {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(403).build();
+            }
+            // Prevent Self-Deactivation
+            String currentAdminEmail = authentication.getName(); // Assuming username/email is the principal
+            if (currentAdminEmail.equals(email)) {
+                return ResponseEntity.badRequest().body("You cannot deactivate your own account.");
+            }
+            return userRepository.findByEmail(email)
+                .map(user -> {
+                    user.setDeactivated(true);
+                    userRepository.save(user);
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            System.out.println("Error deactivating user: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PatchMapping("/users/{email}/activate")
+    public ResponseEntity<?> activateUser(@PathVariable String email, Authentication authentication) {
+        try {
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(403).build();
+            }
+            // Prevent Self-Activation
+            String currentAdminEmail = authentication.getName(); // Assuming username/email is the principal
+            if (currentAdminEmail.equals(email)) {
+                return ResponseEntity.badRequest().body("You cannot activate your own account.");
+            }
+            return userRepository.findByEmail(email)
+                .map(user -> {
+                    user.setDeactivated(false);
+                    userRepository.save(user);
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            System.out.println("Error deactivating user: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    /**
      * Convert User entity to UserResponseDTO
      */
     private UserResponseDTO convertToDTO(User user) {
@@ -122,7 +178,7 @@ public class AdminController {
         dto.setCreatedAt(user.getCreatedAt());
         
         // Set status as Active
-        dto.setStatus("Active");
+        dto.setStatus(user.isDeactivated() ? "Inactive" : "Active");
         
         // Format last login date in a user-friendly format
         if (user.getLastLoginDate() != null) {
