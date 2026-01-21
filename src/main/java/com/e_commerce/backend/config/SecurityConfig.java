@@ -43,12 +43,12 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Allow public product GETs
                 .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated() // Product creation requires auth
-                .requestMatchers(HttpMethod.PUT, "/api/products/**").authenticated() // Product update requires auth
+                .requestMatchers(HttpMethod.PATCH, "/api/products/**").authenticated() // Product update requires auth
                 .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Product deletion requires auth
                 .requestMatchers("/api/admin/**").authenticated() // Admin endpoints require authentication
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Allow order creation for testing (accepts cartId)
                 // Allow public access to uploaded avatars and common static assets (so browser can fetch images without needing auth)
-                .requestMatchers("/avatars/**", "/flutter_service_worker.js", "/favicon.ico", "/**/*.js", "/**/*.css", "/**/*.html").permitAll()
+                .requestMatchers("/avatars/**", "/products/**", "/flutter_service_worker.js", "/favicon.ico", "/**/*.js", "/**/*.css", "/**/*.html").permitAll()
                 .anyRequest().authenticated() // Protect everything else
             )
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -62,7 +62,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
