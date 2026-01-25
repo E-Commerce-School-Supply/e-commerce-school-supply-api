@@ -33,6 +33,6 @@ public class Cart {
         private Double rating;
         private Double price;
         private Integer quantity;
-        private String image;
+        private List<String> images = new ArrayList<>();
     }
 }

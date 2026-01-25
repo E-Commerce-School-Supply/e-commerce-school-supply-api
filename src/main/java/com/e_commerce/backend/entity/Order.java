@@ -2,6 +2,7 @@ package com.e_commerce.backend.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -10,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.e_commerce.backend.enums.OrderStatus;
 import com.e_commerce.backend.enums.PaymentMethod;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
@@ -41,6 +43,8 @@ public class Order {
         private String name;
         private Double price;
         private Integer quantity;
-        private String image;
+        // New list-based storage for multiple images
+        private List<String> images = new ArrayList<>();
+
     }
 }
