@@ -37,23 +37,30 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
-            .cors(Customizer.withDefaults())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
-                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Allow public product GETs
-                .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated() // Product creation requires auth
-                .requestMatchers(HttpMethod.PATCH, "/api/products/**").authenticated() // Product update requires auth
-                .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Product deletion requires auth
-                .requestMatchers("/api/admin/**").authenticated() // Admin endpoints require authentication
-                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Allow order creation for testing (accepts cartId)
-                // Allow public access to uploaded avatars and common static assets (so browser can fetch images without needing auth)
-                .requestMatchers("/avatars/**", "/products/**", "/flutter_service_worker.js", "/favicon.ico", "/**/*.js", "/**/*.css", "/**/*.html").permitAll()
-                .anyRequest().authenticated() // Protect everything else
-            )
-            .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for stateless APIs
+                .cors(Customizer.withDefaults())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll() // Allow auth endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll() // Allow public product GETs
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").authenticated() // Product creation
+                                                                                              // requires auth
+                        .requestMatchers(HttpMethod.PATCH, "/api/products/**").authenticated() // Product update
+                                                                                               // requires auth
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").authenticated() // Product deletion
+                                                                                                // requires auth
+                        .requestMatchers("/api/admin/**").authenticated() // Admin endpoints require authentication
+                        .requestMatchers(HttpMethod.POST, "/api/orders").permitAll() // Allow order creation for testing
+                                                                                     // (accepts cartId)
+                        // Allow public access to uploaded avatars and common static assets (so browser
+                        // can fetch images without needing auth)
+                        .requestMatchers("/avatars/**", "/products/**", "/flutter_service_worker.js", "/favicon.ico",
+                                "/**/*.js", "/**/*.css", "/**/*.html")
+                        .permitAll()
+                        .anyRequest().authenticated() // Protect everything else
+                )
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -86,6 +93,5 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-
 
 }
